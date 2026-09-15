@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container" style="max-width: 950px;">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/admin/sports" class="btn btn-secondary">Manage Sports</a>
+        <a href="/admin/sessions" class="btn btn-secondary">Manage Sessions</a>
+        <a href="/admin/reports" class="btn btn-primary">Reports</a>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Admin Reports & Analytics</h2>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <!-- Date Range Filter Form -->
+      <form action="/admin/reports" method="GET" class="filter-form" style="background: #edf2f7; padding: 18px; border-radius: 6px; margin-bottom: 25px;">
+        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+          <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate" value="<%= startDate %>">
+          </div>
+          <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" name="endDate" value="<%= endDate %>">
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <a href="/admin/reports" class="btn btn-secondary">Reset Filter</a>
+          </div>
+        </div>
+      </form>
+
+      <div class="date-indicator" style="margin-bottom: 20px; font-style: italic; color: #4a5568;">
+        <% if (startDate && endDate) { %>
+          Showing report from <strong><%= startDate %></strong> to <strong><%= endDate %></strong>.
+        <% } else if (startDate) { %>
+          Showing report from <strong><%= startDate %></strong> onwards.
+        <% } else if (endDate) { %>
+          Showing report up to <strong><%= endDate %></strong>.
+        <% } else { %>
+          Showing report for <strong>all dates</strong>.
+        <% } %>
+      </div>
+
+      <% if (!hasSessions) { %>
+        <div class="alert alert-error">
+          No sessions found for the selected period.
+        </div>
+      <% } else { %>
+        <!-- Summary Cards -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px;">
+          <div class="stat-card" style="background: #ebf8ff; border: 1px solid #bee3f8; padding: 15px; border-radius: 6px; text-align: center;">
+            <h4 style="color: #2b6cb0; font-size: 1.8rem; margin-bottom: 5px;"><%= totalSessions %></h4>
+            <p style="font-size: 0.9rem; color: #2c5282;">Total Sessions</p>
+          </div>
+          <div class="stat-card" style="background: #f0fff4; border: 1px solid #c6f6d5; padding: 15px; border-radius: 6px; text-align: center;">
+            <h4 style="color: #276749; font-size: 1.8rem; margin-bottom: 5px;"><%= completedCount %></h4>
+            <p style="font-size: 0.9rem; color: #22543d;">Completed Sessions</p>
+          </div>
+          <div class="stat-card" style="background: #fff5f5; border: 1px solid #fed7d7; padding: 15px; border-radius: 6px; text-align: center;">
+            <h4 style="color: #9b2c2c; font-size: 1.8rem; margin-bottom: 5px;"><%= cancelledCount %></h4>
+            <p style="font-size: 0.9rem; color: #742a2a;">Cancelled Sessions</p>
+          </div>
+          <div class="stat-card" style="background: #faf5ff; border: 1px solid #e9d8fd; padding: 15px; border-radius: 6px; text-align: center;">
+            <h4 style="color: #6b46c1; font-size: 1.8rem; margin-bottom: 5px;"><%= scheduledCount %></h4>
+            <p style="font-size: 0.9rem; color: #553c9a;">Scheduled Sessions</p>
+          </div>
+          <div class="stat-card" style="background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 6px; text-align: center;">
+            <h4 style="color: #dd6b20; font-size: 1.8rem; margin-bottom: 5px;"><%= totalParticipants %></h4>
+            <p style="font-size: 0.9rem; color: #7b341e;">Total Participants</p>
+          </div>
+        </div>
+
+        <!-- Sport Popularity Section -->
+        <section style="margin-bottom: 35px;">
+          <h3>Sport Popularity Ranking</h3>
+          <% if (sportPopularityList.length === 0) { %>
+            <p class="empty-state">No sport popularity data available for this range.</p>
+          <% } else { %>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Sport Name</th>
+                  <th>Number of Sessions</th>
+                  <th>Total Participants</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% sportPopularityList.forEach(function(item) { %>
+                  <tr>
+                    <td><strong>#<%= item.rank %></strong></td>
+                    <td><%= item.sportName %></td>
+                    <td><%= item.sessionCount %></td>
+                    <td><%= item.totalParticipants %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } %>
+        </section>
+
+        <!-- Sessions Played (Completed) Section -->
+        <section>
+          <h3>Sessions Played (Completed Sessions)</h3>
+          <p style="margin-bottom: 15px;">Total Completed Sessions: <strong><%= completedCount %></strong></p>
+
+          <% if (Object.keys(completedBySportMap).length > 0) { %>
+            <div style="margin-bottom: 15px; font-size: 0.95rem;">
+              <strong>Completed Sessions by Sport:</strong>
+              <ul style="padding-left: 20px; margin-top: 5px;">
+                <% Object.keys(completedBySportMap).forEach(function(sportName) { %>
+                  <li><%= sportName %>: <%= completedBySportMap[sportName] %> session(s)</li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+
+          <% if (completedSessions.length === 0) { %>
+            <p class="empty-state">No completed sessions in the selected date range.</p>
+          <% } else { %>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Session Date</th>
+                  <th>Sport Name</th>
+                  <th>Venue</th>
+                  <th>Creator</th>
+                  <th>Participants</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% completedSessions.forEach(function(s) { %>
+                  <tr>
+                    <td><%= s.date %> at <%= s.time %></td>
+                    <td><strong><%= s.sport ? s.sport.name : 'Unknown' %></strong></td>
+                    <td><%= s.venue %></td>
+                    <td><%= s.creator ? s.creator.first_name : 'System' %></td>
+                    <td><%= s.participants ? s.participants.length : 0 %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } %>
+        </section>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

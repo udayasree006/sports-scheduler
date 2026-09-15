@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <a href="/admin/sessions" class="btn btn-secondary">Back to Sessions</a>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Session Details #<%= sessionItem.id %></h2>
+        <% if (sessionItem.status === 'scheduled') { %>
+          <div class="action-cell">
+            <a href="/admin/sessions/<%= sessionItem.id %>/edit" class="btn btn-primary">Edit Session</a>
+            <form action="/admin/sessions/<%= sessionItem.id %>/complete" method="POST" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-success" onclick="return confirm('Mark this session as completed?')">Mark Completed</button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <div class="detail-card">
+        <p><strong>Sport:</strong> <%= sessionItem.sport ? sessionItem.sport.name : 'Unknown' %></p>
+        <p><strong>Date:</strong> <%= sessionItem.date %></p>
+        <p><strong>Time:</strong> <%= sessionItem.time %></p>
+        <p><strong>Venue:</strong> <%= sessionItem.venue %></p>
+        <p><strong>Additional Players Needed:</strong> <%= sessionItem.additionalPlayersNeeded %></p>
+        <p>
+          <strong>Status:</strong>
+          <span class="badge <%= sessionItem.status === 'scheduled' ? 'badge-player' : (sessionItem.status === 'completed' ? 'badge-success' : 'badge-inactive') %>">
+            <%= sessionItem.status %>
+          </span>
+        </p>
+        <p><strong>Creator:</strong> <%= sessionItem.creator ? sessionItem.creator.first_name + ' (' + sessionItem.creator.email + ')' : 'System' %></p>
+      </div>
+
+      <div class="participants-section" style="margin-top: 30px;">
+        <h3>Participants Joined (<%= sessionItem.participants ? sessionItem.participants.length : 0 %>)</h3>
+        <% if (!sessionItem.participants || sessionItem.participants.length === 0) { %>
+          <p class="empty-state">No players have joined this session yet.</p>
+        <% } else { %>
+          <ul class="participants-list">
+            <% sessionItem.participants.forEach(function(p) { %>
+              <li><%= p.user ? p.user.first_name + ' (' + p.user.email + ')' : 'Unknown User' %></li>
+            <% }); %>
+          </ul>
+        <% } %>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

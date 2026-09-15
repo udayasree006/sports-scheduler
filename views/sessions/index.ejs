@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/sessions" class="btn btn-secondary">Browse Sessions</a>
+        <a href="/sessions/new" class="btn btn-primary">+ Create Session</a>
+        <a href="/my-sessions" class="btn btn-secondary">My Sessions</a>
+        <a href="/my-joined-sessions" class="btn btn-secondary">My Joined Sessions</a>
+        <% if (user && user.role === 'admin') { %>
+          <a href="/admin/sessions" class="btn btn-secondary">Manage Sessions</a>
+        <% } %>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Available Sports Sessions</h2>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (sessions.length === 0) { %>
+        <p class="empty-state">No upcoming sports sessions available at the moment. Please check back later or create one!</p>
+      <% } else { %>
+        <div class="sessions-grid">
+          <% sessions.forEach(function(item) { %>
+            <div class="session-card">
+              <h3><%= item.sport ? item.sport.name : 'Sport' %></h3>
+              <p><strong>Date & Time:</strong> <%= item.date %> at <%= item.time %></p>
+              <p><strong>Venue:</strong> <%= item.venue %></p>
+              <p><strong>Players Needed:</strong> <%= item.additionalPlayersNeeded %></p>
+              <p><strong>Joined Players:</strong> <%= item.participants ? item.participants.length : 0 %></p>
+              
+              <div class="card-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                <a href="/sessions/<%= item.id %>" class="btn btn-primary btn-small">View Details</a>
+                <% if (item.additionalPlayersNeeded > 0) { %>
+                  <form action="/sessions/<%= item.id %>/join" method="POST" class="inline-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-success btn-small">Join Session</button>
+                  </form>
+                <% } else { %>
+                  <span class="badge badge-inactive">Full</span>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

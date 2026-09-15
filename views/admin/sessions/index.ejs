@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/admin/sports" class="btn btn-secondary">Manage Sports</a>
+        <a href="/admin/reports" class="btn btn-secondary">Reports</a>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Manage Sports Sessions</h2>
+        <a href="/admin/sessions/new" class="btn btn-primary">+ Create New Session</a>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (sessions.length === 0) { %>
+        <p class="empty-state">No sessions have been scheduled yet. Click "+ Create New Session" to add one.</p>
+      <% } else { %>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Sport</th>
+              <th>Date & Time</th>
+              <th>Venue</th>
+              <th>Needed</th>
+              <th>Status</th>
+              <th>Creator</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sessions.forEach(function(item) { %>
+              <tr>
+                <td><%= item.id %></td>
+                <td><strong><%= item.sport ? item.sport.name : 'Unknown' %></strong></td>
+                <td><%= item.date %> at <%= item.time %></td>
+                <td><%= item.venue %></td>
+                <td><%= item.additionalPlayersNeeded %></td>
+                <td>
+                  <span class="badge <%= item.status === 'scheduled' ? 'badge-player' : (item.status === 'completed' ? 'badge-success' : 'badge-inactive') %>">
+                    <%= item.status %>
+                  </span>
+                </td>
+                <td><%= item.creator ? item.creator.first_name : 'N/A' %></td>
+                <td class="action-cell">
+                  <a href="/admin/sessions/<%= item.id %>" class="btn btn-small btn-secondary">View</a>
+                  <% if (item.status === 'scheduled') { %>
+                    <a href="/admin/sessions/<%= item.id %>/edit" class="btn btn-small btn-secondary">Edit</a>
+                    <form action="/admin/sessions/<%= item.id %>/complete" method="POST" class="inline-form">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-small btn-success" onclick="return confirm('Mark this session as completed?')">Complete</button>
+                    </form>
+                    <form action="/admin/sessions/<%= item.id %>/cancel" method="POST" class="inline-form">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Are you sure you want to cancel this session?')">Cancel</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

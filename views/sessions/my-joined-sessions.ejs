@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/sessions" class="btn btn-secondary">Browse Sessions</a>
+        <a href="/sessions/new" class="btn btn-primary">+ Create Session</a>
+        <a href="/my-sessions" class="btn btn-secondary">My Sessions</a>
+        <a href="/my-joined-sessions" class="btn btn-secondary">My Joined Sessions</a>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>My Joined Sessions</h2>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (sessions.length === 0) { %>
+        <p class="empty-state">You have not joined any sessions yet.</p>
+      <% } else { %>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Sport</th>
+              <th>Date & Time</th>
+              <th>Venue</th>
+              <th>Status</th>
+              <th>Creator</th>
+              <th>Participants</th>
+              <th>Slots Needed</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sessions.forEach(function(item) { %>
+              <tr>
+                <td><%= item.id %></td>
+                <td><strong><%= item.sport ? item.sport.name : 'Unknown' %></strong></td>
+                <td><%= item.date %> at <%= item.time %></td>
+                <td><%= item.venue %></td>
+                <td>
+                  <span class="badge <%= item.status === 'scheduled' ? 'badge-player' : 'badge-inactive' %>">
+                    <%= item.status %>
+                  </span>
+                  <% if (item.cancellationReason) { %>
+                    <br><small style="color: #e53e3e;">Reason: <%= item.cancellationReason %></small>
+                  <% } %>
+                </td>
+                <td><%= item.creator ? item.creator.first_name : 'N/A' %></td>
+                <td><%= item.participants ? item.participants.length : 0 %></td>
+                <td><%= item.additionalPlayersNeeded %></td>
+                <td>
+                  <a href="/sessions/<%= item.id %>" class="btn btn-small btn-secondary">View Details</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

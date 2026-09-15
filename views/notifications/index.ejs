@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/sessions" class="btn btn-secondary">Browse Sessions</a>
+        <a href="/sessions/new" class="btn btn-primary">+ Create Session</a>
+        <a href="/my-sessions" class="btn btn-secondary">My Sessions</a>
+        <a href="/my-joined-sessions" class="btn btn-secondary">My Joined Sessions</a>
+        <a href="/notifications" class="btn btn-secondary">
+          🔔 Notifications <%= typeof unreadNotificationsCount !== 'undefined' && unreadNotificationsCount > 0 ? '(' + unreadNotificationsCount + ')' : '' %>
+        </a>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Notifications</h2>
+        <% if (notifications && notifications.some(function(n) { return !n.read; })) { %>
+          <form action="/notifications/read-all" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-secondary btn-small">Mark All as Read</button>
+          </form>
+        <% } %>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (notifications.length === 0) { %>
+        <p class="empty-state">You have no notifications.</p>
+      <% } else { %>
+        <div class="notifications-list" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+          <% notifications.forEach(function(item) { %>
+            <div class="notification-item" style="padding: 16px 20px; border-radius: var(--radius-md); border: 1px solid var(--border); transition: var(--transition); <%= item.read ? 'background-color: #f8fafc; opacity: 0.85;' : 'background-color: #eff6ff; border-left: 5px solid var(--primary); box-shadow: var(--shadow-sm);' %>">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; flex-wrap: wrap;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                    <span class="badge <%= item.type === 'session_joined' ? 'badge-player' : (item.type === 'session_cancelled' ? 'badge-danger' : 'badge-admin') %>">
+                      <%= item.type.replace('_', ' ') %>
+                    </span>
+                    <small style="color: var(--text-muted); font-size: 0.82rem;"><%= new Date(item.createdAt).toLocaleString() %></small>
+                    <% if (!item.read) { %>
+                      <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%;" title="Unread"></span>
+                    <% } %>
+                  </div>
+                  <p style="color: var(--navy-dark); font-weight: 500; font-size: 0.95rem; margin: 0;"><%= item.message %></p>
+                </div>
+                <% if (!item.read) { %>
+                  <form action="/notifications/<%= item.id %>/read" method="POST" class="inline-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-secondary btn-small">Mark as read</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>

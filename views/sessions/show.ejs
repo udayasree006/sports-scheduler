@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <a href="/sessions" class="btn btn-secondary">Browse Sessions</a>
+        <a href="/my-sessions" class="btn btn-secondary">My Sessions</a>
+        <a href="/my-joined-sessions" class="btn btn-secondary">My Joined Sessions</a>
+      </div>
+    </header>
+
+    <main>
+      <h2>Session Details</h2>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <div class="detail-card">
+        <h3><%= sessionItem.sport ? sessionItem.sport.name : 'Unknown Sport' %></h3>
+        <p><strong>Date:</strong> <%= sessionItem.date %></p>
+        <p><strong>Time:</strong> <%= sessionItem.time %></p>
+        <p><strong>Venue:</strong> <%= sessionItem.venue %></p>
+        <p><strong>Remaining Players Needed:</strong> <%= sessionItem.additionalPlayersNeeded %></p>
+        <p>
+          <strong>Status:</strong>
+          <span class="badge <%= sessionItem.status === 'scheduled' ? 'badge-player' : (sessionItem.status === 'completed' ? 'badge-success' : 'badge-inactive') %>">
+            <%= sessionItem.status === 'cancelled' ? 'Session Cancelled' : sessionItem.status %>
+          </span>
+        </p>
+        <p><strong>Creator:</strong> <%= sessionItem.creator ? sessionItem.creator.first_name : 'System' %></p>
+
+        <% if (sessionItem.cancellationReason) { %>
+          <div class="alert alert-error" style="margin-top: 15px;">
+            <strong>Cancellation Reason:</strong> <%= sessionItem.cancellationReason %>
+          </div>
+        <% } %>
+
+        <div style="margin-top: 20px;">
+          <% if (isCreator) { %>
+            <div class="alert alert-success" style="margin-bottom: 15px;">You created this session.</div>
+          <% } %>
+
+          <% if (sessionItem.status === 'cancelled') { %>
+            <div class="alert alert-error">Session Cancelled</div>
+          <% } else if (sessionItem.status === 'completed') { %>
+            <div class="alert alert-success">This session has been completed.</div>
+          <% } else if (isPast) { %>
+            <div class="alert alert-error">This session has already started or passed.</div>
+          <% } else if (hasJoined) { %>
+            <div class="alert alert-success">You have joined this session.</div>
+          <% } else if (sessionItem.additionalPlayersNeeded <= 0) { %>
+            <div class="alert alert-error">This session is full.</div>
+          <% } else { %>
+            <form action="/sessions/<%= sessionItem.id %>/join" method="POST" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-success">Join This Session</button>
+            </form>
+          <% } %>
+        </div>
+
+        <% if (isCreator && sessionItem.status === 'scheduled') { %>
+          <div class="cancel-section" style="margin-top: 25px; border-top: 1px solid #cbd5e0; padding-top: 15px;">
+            <h4 style="margin-bottom: 10px; color: #c53030;">Cancel Session</h4>
+            <form action="/sessions/<%= sessionItem.id %>/cancel" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="form-group">
+                <label for="cancellationReason">Cancellation Reason (Optional):</label>
+                <textarea id="cancellationReason" name="cancellationReason" rows="3" maxlength="500" placeholder="Why are you cancelling this session? (optional)"></textarea>
+              </div>
+              <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this session?');">
+                Cancel Session
+              </button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="participants-section" style="margin-top: 30px;">
+        <h3>Current Participants (<%= sessionItem.participants ? sessionItem.participants.length : 0 %>)</h3>
+        <% if (!sessionItem.participants || sessionItem.participants.length === 0) { %>
+          <p class="empty-state">No players have joined this session yet.</p>
+        <% } else { %>
+          <ul class="participants-list">
+            <% sessionItem.participants.forEach(function(p) { %>
+              <li><%= p.user ? p.user.first_name : 'Player' %></li>
+            <% }); %>
+          </ul>
+        <% } %>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

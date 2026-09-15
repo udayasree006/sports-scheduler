@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <h1>Sports Scheduler</h1>
+      <div class="nav-links">
+        <a href="/" class="btn btn-secondary">Home</a>
+        <form action="/logout" method="POST" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h2>Manage Sports</h2>
+        <a href="/admin/sports/new" class="btn btn-primary">+ Create New Sport</a>
+      </div>
+
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <div class="alert alert-error">
+          <% messages.error.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <div class="alert alert-success">
+          <% messages.success.forEach(function(msg) { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (sports.length === 0) { %>
+        <p class="empty-state">No sports have been created yet. Click "+ Create New Sport" to add one.</p>
+      <% } else { %>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sports.forEach(function(sport) { %>
+              <tr>
+                <td><%= sport.id %></td>
+                <td><strong><%= sport.name %></strong></td>
+                <td><%= sport.description || 'No description' %></td>
+                <td>
+                  <span class="badge <%= sport.active ? 'badge-player' : 'badge-inactive' %>">
+                    <%= sport.active ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td class="action-cell">
+                  <a href="/admin/sports/<%= sport.id %>/edit" class="btn btn-small btn-secondary">Edit</a>
+                  <form action="/admin/sports/<%= sport.id %>/toggle" method="POST" class="inline-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-small <%= sport.active ? 'btn-danger' : 'btn-success' %>">
+                      <%= sport.active ? 'Deactivate' : 'Activate' %>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </main>
+  </div>
+</body>
+</html>
