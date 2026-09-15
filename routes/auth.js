@@ -60,6 +60,14 @@ router.post("/signup", async (req, res, next) => {
     req.flash("success", "Account created successfully! Please log in.");
     return res.redirect("/login");
   } catch (err) {
+    console.error("Signup error details:", {
+      name: err.name,
+      message: err.message,
+      originalMessage: err.original?.message,
+      parentMessage: err.parent?.message,
+      originalCode: err.original?.code,
+      parentCode: err.parent?.code
+    });
     return next(err);
   }
 });
