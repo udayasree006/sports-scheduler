@@ -16,6 +16,9 @@ const notificationsRoutes = require("./routes/notifications");
 
 const app = express();
 
+// Trust reverse proxy (e.g. Render, Heroku)
+app.set("trust proxy", 1);
+
 // Initialize Passport Local Strategy
 initializePassport(passport);
 
@@ -38,6 +41,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
   })
