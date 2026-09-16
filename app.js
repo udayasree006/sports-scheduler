@@ -13,7 +13,6 @@ const adminSessionsRoutes = require("./routes/adminSessions");
 const playerSessionsRoutes = require("./routes/playerSessions");
 const adminReportsRoutes = require("./routes/adminReports");
 const notificationsRoutes = require("./routes/notifications");
-const adminDebugRoutes = require("./routes/adminDebug");
 
 const app = express();
 
@@ -90,7 +89,6 @@ app.use("/", authRoutes);
 app.use("/admin/sports", sportsRoutes);
 app.use("/admin/sessions", adminSessionsRoutes);
 app.use("/admin/reports", adminReportsRoutes);
-app.use("/admin/debug", adminDebugRoutes);
 app.use("/notifications", notificationsRoutes);
 app.use("/", playerSessionsRoutes);
 
