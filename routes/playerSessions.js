@@ -1,4 +1,5 @@
 const express = require("express");
+const { Op } = require("sequelize");
 const { Session, Sport, User, Participant, Notification } = require("../models");
 const { requireLogin } = require("../middleware/auth");
 
@@ -247,6 +248,31 @@ router.post("/sessions/:id/join", async (req, res, next) => {
     );
     if (alreadyJoined) {
       req.flash("error", "You have already joined this session.");
+      return res.redirect(`/sessions/${sessionItem.id}`);
+    }
+
+    // 5b. Schedule conflict check: Player cannot join another session on the same date AND time
+    const conflictingParticipation = await Participant.findOne({
+      where: { userId: req.user.id },
+      include: [
+        {
+          model: Session,
+          as: "session",
+          where: {
+            date: sessionItem.date,
+            time: sessionItem.time,
+            status: "scheduled",
+            id: { [Op.ne]: sessionItem.id }
+          }
+        }
+      ]
+    });
+
+    if (conflictingParticipation) {
+      req.flash(
+        "error",
+        "You cannot join this session because you already have another session scheduled at this date and time."
+      );
       return res.redirect(`/sessions/${sessionItem.id}`);
     }
 

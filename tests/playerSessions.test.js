@@ -287,4 +287,181 @@ describe("Player Session View & Join", () => {
     expect(unauthRes.statusCode).toBe(302);
     expect(unauthRes.headers.location).toBe("/login");
   });
+
+  describe("Schedule Conflict Prevention (Same Date & Time)", () => {
+    it("15. Player cannot join another session with the exact same date and time", async () => {
+      const session1 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "Venue 1",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      const session2 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "Venue 2",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      await playerAgent.post(`/sessions/${session1.id}/join`);
+      const res = await playerAgent.post(`/sessions/${session2.id}/join`);
+
+      expect(res.statusCode).toBe(302);
+      expect(res.headers.location).toBe(`/sessions/${session2.id}`);
+
+      const joinedSession2 = await Participant.count({
+        where: { sessionId: session2.id, userId: playerUser.id }
+      });
+      expect(joinedSession2).toBe(0);
+    });
+
+    it("16. Player can join sessions on the same date at different times", async () => {
+      const session1 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: "10:00",
+        venue: "Morning Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      const session2 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: "14:00",
+        venue: "Afternoon Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      await playerAgent.post(`/sessions/${session1.id}/join`);
+      const res = await playerAgent.post(`/sessions/${session2.id}/join`);
+
+      expect(res.statusCode).toBe(302);
+      const joinedSession2 = await Participant.count({
+        where: { sessionId: session2.id, userId: playerUser.id }
+      });
+      expect(joinedSession2).toBe(1);
+    });
+
+    it("17. Player can join sessions on different dates", async () => {
+      const session1 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: "2030-12-01",
+        time: futureTime,
+        venue: "Day 1 Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      const session2 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: "2030-12-02",
+        time: futureTime,
+        venue: "Day 2 Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      await playerAgent.post(`/sessions/${session1.id}/join`);
+      const res = await playerAgent.post(`/sessions/${session2.id}/join`);
+
+      expect(res.statusCode).toBe(302);
+      const joinedSession2 = await Participant.count({
+        where: { sessionId: session2.id, userId: playerUser.id }
+      });
+      expect(joinedSession2).toBe(1);
+    });
+
+    it("18. Cancelled sessions do not block joining a new session at the same date and time", async () => {
+      const cancelledSession = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "Cancelled Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      await Participant.create({ sessionId: cancelledSession.id, userId: playerUser.id });
+
+      cancelledSession.status = "cancelled";
+      await cancelledSession.save();
+
+      const newSession = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "New Venue",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      const res = await playerAgent.post(`/sessions/${newSession.id}/join`);
+      expect(res.statusCode).toBe(302);
+
+      const joinedNew = await Participant.count({
+        where: { sessionId: newSession.id, userId: playerUser.id }
+      });
+      expect(joinedNew).toBe(1);
+    });
+
+    it("19. Different players can join different sessions at the same date and time", async () => {
+      const hashedPassword = await bcrypt.hash("pass123", 10);
+      const player2User = await User.create({
+        first_name: "PlayerTwo",
+        email: "player2@example.com",
+        password: hashedPassword,
+        role: "player"
+      });
+
+      const player2Agent = request.agent(app);
+      await player2Agent.post("/login").send({
+        email: "player2@example.com",
+        password: "pass123"
+      });
+
+      const session1 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "Venue 1",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      const session2 = await Session.create({
+        sportId: sport.id,
+        creatorId: adminUser.id,
+        date: futureDate,
+        time: futureTime,
+        venue: "Venue 2",
+        additionalPlayersNeeded: 4,
+        status: "scheduled"
+      });
+
+      await playerAgent.post(`/sessions/${session1.id}/join`);
+      const res = await player2Agent.post(`/sessions/${session2.id}/join`);
+
+      expect(res.statusCode).toBe(302);
+      const joinedSession2 = await Participant.count({
+        where: { sessionId: session2.id, userId: player2User.id }
+      });
+      expect(joinedSession2).toBe(1);
+    });
+  });
 });
