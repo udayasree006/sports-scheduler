@@ -197,7 +197,7 @@ The main workflow of the application is:
 
 The deployed application is available here:
 
-**[Sports Scheduler – Live Application](https://sports-scheduler-y1jv.onrender.com)**
+[Sports Scheduler](https://sports-scheduler-y1jv.onrender.com)
 
 ---
 
