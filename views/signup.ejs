@@ -60,5 +60,15 @@
       <p class="auth-link">Already have an account? <a href="/login">Log In</a></p>
     </main>
   </div>
+  <script>
+  document.querySelector('.auth-form').addEventListener('submit', function (event) {
+    const password = document.getElementById('password').value;
+
+    if (password.length < 8) {
+      event.preventDefault();
+      alert('Password must be at least 8 characters long.');
+    }
+  });
+</script>
 </body>
 </html>
