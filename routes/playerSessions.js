@@ -65,7 +65,17 @@ router.get("/sessions/new", async (req, res, next) => {
 // POST /sessions - Create Session by Logged-in Player
 router.post("/sessions", async (req, res, next) => {
   try {
-    const { sportId, date, time, venue, additionalPlayersNeeded } = req.body;
+    const {
+      sportId,
+      date,
+      time,
+      venue,
+      additionalPlayersNeeded,
+      team1Name,
+      team1Players,
+      team2Name,
+      team2Players
+    } = req.body;
     const trimmedVenue = venue ? venue.trim() : "";
     const playersCount = parseInt(additionalPlayersNeeded, 10);
 
@@ -102,7 +112,11 @@ router.post("/sessions", async (req, res, next) => {
       time,
       venue: trimmedVenue,
       additionalPlayersNeeded: playersCount,
-      status: "scheduled"
+      status: "scheduled",
+      team1Name: team1Name ? team1Name.trim() : "",
+      team1Players: team1Players || [],
+      team2Name: team2Name ? team2Name.trim() : "",
+      team2Players: team2Players || []
     });
 
     req.flash("success", "Session created successfully.");

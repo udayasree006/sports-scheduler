@@ -55,7 +55,17 @@ router.get("/new", async (req, res, next) => {
 // POST /admin/sessions - Handle Session Creation
 router.post("/", async (req, res, next) => {
   try {
-    const { sportId, date, time, venue, additionalPlayersNeeded } = req.body;
+    const {
+      sportId,
+      date,
+      time,
+      venue,
+      additionalPlayersNeeded,
+      team1Name,
+      team1Players,
+      team2Name,
+      team2Players
+    } = req.body;
     const trimmedVenue = venue ? venue.trim() : "";
     const playersCount = parseInt(additionalPlayersNeeded, 10);
 
@@ -92,7 +102,11 @@ router.post("/", async (req, res, next) => {
       time,
       venue: trimmedVenue,
       additionalPlayersNeeded: playersCount,
-      status: "scheduled"
+      status: "scheduled",
+      team1Name: team1Name ? team1Name.trim() : "",
+      team1Players: team1Players || [],
+      team2Name: team2Name ? team2Name.trim() : "",
+      team2Players: team2Players || []
     });
 
     req.flash("success", "Session created successfully.");
@@ -178,7 +192,17 @@ router.post("/:id", async (req, res, next) => {
       return res.redirect("/admin/sessions");
     }
 
-    const { sportId, date, time, venue, additionalPlayersNeeded } = req.body;
+    const {
+      sportId,
+      date,
+      time,
+      venue,
+      additionalPlayersNeeded,
+      team1Name,
+      team1Players,
+      team2Name,
+      team2Players
+    } = req.body;
     const trimmedVenue = venue ? venue.trim() : "";
     const playersCount = parseInt(additionalPlayersNeeded, 10);
 
@@ -212,6 +236,10 @@ router.post("/:id", async (req, res, next) => {
     sessionItem.time = time;
     sessionItem.venue = trimmedVenue;
     sessionItem.additionalPlayersNeeded = playersCount;
+    sessionItem.team1Name = team1Name ? team1Name.trim() : "";
+    sessionItem.team1Players = team1Players || [];
+    sessionItem.team2Name = team2Name ? team2Name.trim() : "";
+    sessionItem.team2Players = team2Players || [];
 
     await sessionItem.save();
 

@@ -29,7 +29,7 @@
           <p>No active sports available. Please <a href="/admin/sports/new">create an active sport</a> first.</p>
         </div>
       <% } else { %>
-        <form action="/admin/sessions" method="POST" class="auth-form">
+        <form action="/admin/sessions" method="POST" class="auth-form" style="max-width: 650px;">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
           <div class="form-group">
@@ -40,6 +40,47 @@
                 <option value="<%= sport.id %>"><%= sport.name %></option>
               <% }); %>
             </select>
+          </div>
+
+          <div class="form-group card" style="padding: 15px; margin-bottom: 20px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <h4 style="margin-bottom: 12px; color: #2b6cb0;">Team 1 Setup</h4>
+            <div class="form-group">
+              <label for="team1Name">Team 1 Name</label>
+              <input type="text" id="team1Name" name="team1Name" placeholder="e.g. Team A" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Already Available Players – Team 1</label>
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="t1PlayerInput" placeholder="Enter player name" class="form-control" style="flex: 1;">
+                <button type="button" id="t1AddBtn" class="btn btn-secondary">Add Player</button>
+              </div>
+              <ul id="t1PlayerList" class="participants-list" style="margin-top: 5px; max-height: 150px; overflow-y: auto;"></ul>
+              <div id="t1HiddenInputs"></div>
+            </div>
+          </div>
+
+          <div class="form-group card" style="padding: 15px; margin-bottom: 20px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <h4 style="margin-bottom: 12px; color: #2b6cb0;">Team 2 Setup</h4>
+            <div class="form-group">
+              <label for="team2Name">Team 2 Name</label>
+              <input type="text" id="team2Name" name="team2Name" placeholder="e.g. Team B" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Already Available Players – Team 2</label>
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="t2PlayerInput" placeholder="Enter player name" class="form-control" style="flex: 1;">
+                <button type="button" id="t2AddBtn" class="btn btn-secondary">Add Player</button>
+              </div>
+              <ul id="t2PlayerList" class="participants-list" style="margin-top: 5px; max-height: 150px; overflow-y: auto;"></ul>
+              <div id="t2HiddenInputs"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="additionalPlayersNeeded">Additional Players Needed *</label>
+            <input type="number" id="additionalPlayersNeeded" name="additionalPlayersNeeded" min="0" value="4" required>
           </div>
 
           <div class="form-group">
@@ -57,13 +98,64 @@
             <input type="text" id="venue" name="venue" required placeholder="e.g. Central Park Court 1">
           </div>
 
-          <div class="form-group">
-            <label for="additionalPlayersNeeded">Additional Players Needed *</label>
-            <input type="number" id="additionalPlayersNeeded" name="additionalPlayersNeeded" min="0" value="4" required>
-          </div>
-
-          <button type="submit" class="btn btn-primary">Create Session</button>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1.05rem;">Create Session</button>
         </form>
+
+        <script>
+          function setupTeamManager(inputId, addBtnId, listId, hiddenContainerId, inputName) {
+            const input = document.getElementById(inputId);
+            const addBtn = document.getElementById(addBtnId);
+            const list = document.getElementById(listId);
+            const hiddenContainer = document.getElementById(hiddenContainerId);
+            const players = [];
+
+            function render() {
+              list.innerHTML = "";
+              hiddenContainer.innerHTML = "";
+              players.forEach((name, index) => {
+                const li = document.createElement("li");
+                li.style.display = "flex";
+                li.style.justifyContent = "space-between";
+                li.style.alignItems = "center";
+                li.style.marginBottom = "5px";
+                li.innerHTML = `<span>• ${name}</span> <button type="button" class="btn btn-danger btn-sm" style="padding: 2px 8px; font-size: 0.8rem;">Remove</button>`;
+                li.querySelector("button").addEventListener("click", () => {
+                  players.splice(index, 1);
+                  render();
+                });
+                list.appendChild(li);
+
+                const hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = inputName;
+                hidden.value = name;
+                hiddenContainer.appendChild(hidden);
+              });
+            }
+
+            function addPlayer() {
+              const val = input.value.trim();
+              if (val) {
+                players.push(val);
+                input.value = "";
+                render();
+              }
+            }
+
+            addBtn.addEventListener("click", addPlayer);
+            input.addEventListener("keypress", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addPlayer();
+              }
+            });
+          }
+
+          document.addEventListener("DOMContentLoaded", () => {
+            setupTeamManager("t1PlayerInput", "t1AddBtn", "t1PlayerList", "t1HiddenInputs", "team1Players[]");
+            setupTeamManager("t2PlayerInput", "t2AddBtn", "t2PlayerList", "t2HiddenInputs", "team2Players[]");
+          });
+        </script>
       <% } %>
     </main>
   </div>

@@ -54,6 +54,9 @@
           <% sessions.forEach(function(item) { %>
             <div class="session-card">
               <h3><%= item.sport ? item.sport.name : 'Sport' %></h3>
+              <% if (item.team1Name || item.team2Name) { %>
+                <p><strong>Match:</strong> <%= item.team1Name || 'Team 1' %> vs <%= item.team2Name || 'Team 2' %></p>
+              <% } %>
               <p><strong>Date & Time:</strong> <%= item.date %> at <%= item.time %></p>
               <p><strong>Venue:</strong> <%= item.venue %></p>
               <p><strong>Players Needed:</strong> <%= item.additionalPlayersNeeded %></p>

@@ -322,4 +322,40 @@ describe("Player Created Sports Sessions", () => {
     expect(res.statusCode).toBe(302);
     expect(res.headers.location).toBe("/login");
   });
+
+  it("19. Player can create a session with Team 1, Team 2, and existing player lists", async () => {
+    const res = await player1Agent.post("/sessions").send({
+      sportId: activeSport.id,
+      date: futureDate,
+      time: futureTime,
+      venue: "College Ground",
+      additionalPlayersNeeded: 3,
+      team1Name: "Team A",
+      team1Players: ["Udaya", "Sree", "Anjali"],
+      team2Name: "Team B",
+      team2Players: ["Rahul", "Kiran"]
+    });
+
+    expect(res.statusCode).toBe(302);
+
+    const createdSession = await Session.findOne({
+      where: { venue: "College Ground" }
+    });
+
+    expect(createdSession).not.toBeNull();
+    expect(createdSession.team1Name).toBe("Team A");
+    expect(createdSession.team1Players).toEqual(["Udaya", "Sree", "Anjali"]);
+    expect(createdSession.team2Name).toBe("Team B");
+    expect(createdSession.team2Players).toEqual(["Rahul", "Kiran"]);
+
+    const detailsRes = await player1Agent.get(`/sessions/${createdSession.id}`);
+    expect(detailsRes.statusCode).toBe(200);
+    expect(detailsRes.text).toContain("Team A");
+    expect(detailsRes.text).toContain("Team B");
+    expect(detailsRes.text).toContain("Udaya");
+    expect(detailsRes.text).toContain("Sree");
+    expect(detailsRes.text).toContain("Anjali");
+    expect(detailsRes.text).toContain("Rahul");
+    expect(detailsRes.text).toContain("Kiran");
+  });
 });
