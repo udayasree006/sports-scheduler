@@ -7,6 +7,7 @@
 The application supports two types of users:
 
 * **Administrator** – manages the sports available in the application, creates and manages sessions, and views reports.
+
 * **Player** – signs up, creates sport sessions, browses available sessions, joins sessions, and manages their own sessions.
 
 The project was developed as part of the **WD501 Advanced Backend Capstone Project**.
@@ -37,6 +38,11 @@ As a player, I can:
 * Browse upcoming sport sessions.
 * View details of existing sessions.
 * Create my own sport sessions.
+* Select an available sport.
+* Specify Team 1 and Team 2 names.
+* Add the names of players already available in Team 1 and Team 2.
+* Specify the number of additional players required.
+* Specify the date, time, and venue.
 * Join available sessions.
 * See participants who have joined a session.
 * View sessions I have created separately.
@@ -75,9 +81,11 @@ Administrators and players can:
 
 * Create sport sessions.
 * Select an available sport.
+* Specify Team 1 and Team 2 names.
+* Add existing players to Team 1 and Team 2.
+* Specify the number of additional players required.
 * Specify date and time.
 * Specify the venue.
-* Specify the number of additional players required.
 * View session details.
 * Track participants.
 * View created sessions.
@@ -142,13 +150,16 @@ The main workflow of the application is:
 1. An administrator signs in.
 2. The administrator creates the sports available for scheduling.
 3. An administrator or player creates a sport session.
-4. Players browse upcoming sessions.
-5. Players view session details and join available sessions.
-6. Joined participants are displayed in the session.
-7. A session creator can cancel their session and provide a reason.
-8. Administrators can mark scheduled sessions as completed.
-9. Administrators can view reports and sport popularity.
-10. Users receive notifications about relevant session activities.
+4. The creator selects a sport and provides Team 1 and Team 2 details.
+5. Existing players can be added to each team.
+6. The creator specifies the number of additional players required, date, time, and venue.
+7. Players browse upcoming sessions.
+8. Players view session details and join available sessions.
+9. Joined participants are displayed in the session.
+10. A session creator can cancel their session and provide a reason.
+11. Administrators can mark scheduled sessions as completed.
+12. Administrators can view reports and sport popularity.
+13. Users receive notifications about relevant session activities.
 
 ---
 
@@ -186,12 +197,17 @@ The main workflow of the application is:
 
 ![Player Dashboard](screenshots/playerdashboard.png)
 
+![Create New Sports Session](screenshots/create-new-sports-session.png)
+
+![Create New Sports Session - Teams](screenshots/create-new-sportsession.png)
+
 ![My Created Sessions](screenshots/player-mycreatedsession.png)
 
 ![My Joined Sessions](screenshots/player-myjoinedsession.png)
 
 ![Notifications](screenshots/player-notifications.png)
 
+---
 
 ## Live Application
 
@@ -203,22 +219,23 @@ The deployed application is available here:
 
 ## Video Demonstration
 
-A video demonstration will be added here before final submission.
+A complete video demonstration of the Sports Scheduler application is available here:
 
-**Video Link:**
-`[Add video link here]`
+**[Watch the Sports Scheduler Demo on YouTube](https://youtu.be/UBWJ-O6iixw)**
 
-The demonstration will cover:
+The demonstration covers:
 
 1. Homepage
 2. Administrator login
 3. Creating a sport
 4. Player login
 5. Creating a sport session
-6. Joining an existing session
-7. Viewing reports
-8. An interesting or challenging implementation
-9. Additional optional features
+6. Team 1 and Team 2 creation
+7. Adding existing players to teams
+8. Joining an existing session
+9. Viewing reports
+10. An interesting or challenging implementation
+11. Additional optional features
 
 ---
 
@@ -276,7 +293,7 @@ The application includes automated tests using **Jest** and **Supertest**.
 Current verified test status:
 
 * **Test suites:** 13 passed
-* **Tests:** 154 passed
+* **Tests:** 155 passed
 * **Failures:** 0
 
 Run the test suite using:
@@ -340,6 +357,7 @@ npm test
 
 ```text
 sports-scheduler/
+
 │
 ├── config/          # Database and Passport configuration
 ├── middleware/      # Authentication and authorization middleware
@@ -364,3 +382,5 @@ sports-scheduler/
 The Sports Scheduler implements the required features described in the **WD501 Advanced Backend Capstone** project guidelines.
 
 The application is deployed on Render and includes additional optional features such as password changing, notifications, session completion, and same-date/time session conflict prevention.
+
+The application also supports team-based session creation with Team 1 and Team 2 names, existing players in each team, and additional player requirements.
